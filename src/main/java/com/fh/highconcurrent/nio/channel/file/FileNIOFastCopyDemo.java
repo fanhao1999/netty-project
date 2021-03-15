@@ -45,11 +45,16 @@ public class FileNIOFastCopyDemo {
             inChannel = fis.getChannel();
             outChannel = fos.getChannel();
 
+            long size = inChannel.size();
+            // 1M
+            long transferSize = 1024 * 1024;
             long position = 0L;
-            long size = 1024 * 1024;
-            while (position <= inChannel.size()) {
-
+            long count;
+            while (position < size) {
+                count = size - position > transferSize ? transferSize : size - position;
+                position += outChannel.transferFrom(inChannel, position, count);
             }
+            outChannel.force(true);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
