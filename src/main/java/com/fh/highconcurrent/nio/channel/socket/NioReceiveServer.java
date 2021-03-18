@@ -31,10 +31,9 @@ public class NioReceiveServer {
     public void startServer() throws IOException {
         Selector selector = Selector.open();
         ServerSocketChannel serverChannel = ServerSocketChannel.open();
-        ServerSocket serverSocket = serverChannel.socket();
         serverChannel.configureBlocking(false);
         InetSocketAddress address = new InetSocketAddress(8080);
-        serverSocket.bind(address);
+        serverChannel.bind(address);
 
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
         while (selector.select() > 0) {
@@ -180,7 +179,7 @@ public class NioReceiveServer {
     }
 
     public static void main(String[] args) throws IOException {
-        NioReceiveServer nioReceiveServer = new NioReceiveServer();
-        nioReceiveServer.startServer();
+        NioReceiveServer server = new NioReceiveServer();
+        server.startServer();
     }
 }
