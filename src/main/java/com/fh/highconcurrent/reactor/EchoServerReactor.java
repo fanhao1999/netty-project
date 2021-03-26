@@ -29,7 +29,13 @@ public class EchoServerReactor implements Runnable {
 
     @Override
     public void run() {
-
+        try {
+            while (!Thread.interrupted()) {
+                selector.select()
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class AcceptorHandler implements Runnable {
