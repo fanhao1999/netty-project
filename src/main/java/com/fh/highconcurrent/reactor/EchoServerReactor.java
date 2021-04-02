@@ -6,6 +6,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author hao.fan
@@ -31,10 +33,24 @@ public class EchoServerReactor implements Runnable {
     public void run() {
         try {
             while (!Thread.interrupted()) {
-                selector.select()
+                selector.select();
+                Set<SelectionKey> keys = selector.selectedKeys();
+                Iterator<SelectionKey> it = keys.iterator();
+                while (it.hasNext()) {
+                    SelectionKey key = it.next();
+                    dispatch(key);
+                }
+                keys.clear();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void dispatch(SelectionKey key) {
+        Runnable handler = (Runnable) key.attachment();
+        if (handler != null) {
+            handler.run();
         }
     }
 
@@ -46,7 +62,7 @@ public class EchoServerReactor implements Runnable {
                 SocketChannel socketChannel = serverChannel.accept();
                 if (socketChannel != null) {
                     System.out.println("接收到一个连接");
-                    // TODO
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
