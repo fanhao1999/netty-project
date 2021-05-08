@@ -62,11 +62,15 @@ public class EchoServerReactor implements Runnable {
                 SocketChannel socketChannel = serverChannel.accept();
                 if (socketChannel != null) {
                     System.out.println("接收到一个连接");
-
+                    new EchoHandler(selector, socketChannel);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void main(String[] args) throws IOException {
+        new Thread(new EchoServerReactor()).start();
     }
 }

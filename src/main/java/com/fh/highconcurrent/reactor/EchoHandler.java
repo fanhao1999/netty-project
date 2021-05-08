@@ -28,11 +28,35 @@ public class EchoHandler implements Runnable {
         this.channel.configureBlocking(false);
         sk = this.channel.register(selector, 0);
         sk.attach(this);
-        sk.interestOps()
+        sk.interestOps(SelectionKey.OP_READ);
+        selector.wakeup();
     }
 
     @Override
     public void run() {
-
+        try {
+            if (state == SENDING) {
+                channel.write(buffer);
+                buffer.clear();
+                sk.interestOps(SelectionKey.OP_READ);
+                state = RECIEVING;
+            } else if (state == RECIEVING) {
+                int length = 0;
+                while ((length = channel.read(buffer)) > 0) {
+                    System.out.println(new String(buffer.array(), 0, length));
+                }
+                buffer.flip();
+                sk.interestOps(SelectionKey.OP_WRITE);
+                state = SENDING;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            sk.cancel();
+            try {
+                channel.finishConnect();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
     }
 }
