@@ -2,11 +2,14 @@ package com.fh.highconcurrent.reactor;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SelectableChannel;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Set;
 
 /**
@@ -48,12 +51,38 @@ public class EchoClient {
                     while (it.hasNext()) {
                         SelectionKey key = it.next();
                         SocketChannel channel = (SocketChannel) key.channel();
-
+                        if (key.isWritable()) {
+                            ByteBuffer buffer = ByteBuffer.allocate(1024);
+                            Scanner scanner = new Scanner(System.in);
+                            System.out.println("请输入发送内容:");
+                            if (scanner.hasNext()) {
+                                String next = scanner.next();
+                                String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                                buffer.put((now + " >> " + next).getBytes());
+                                buffer.flip();
+                                channel.write(buffer);
+                                buffer.clear();
+                            }
+                        }
+                        if (key.isReadable()) {
+                            ByteBuffer buffer = ByteBuffer.allocate(1024);
+                            int length = 0;
+                            while ((length = channel.read(buffer)) > 0) {
+                                buffer.flip();
+                                System.out.println("server echo:" + new String(buffer.array(), 0, length));
+                                buffer.clear();
+                            }
+                        }
                     }
+                    keys.clear();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void main(String[] args) throws IOException {
+        new EchoClient().start();
     }
 }
