@@ -36,7 +36,7 @@ public class NettyDiscardServer {
             sb.childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast();
+                    ch.pipeline().addLast(new NettyDiscardHandler());
                 }
             });
             ChannelFuture channelFuture = sb.bind().sync();
@@ -52,7 +52,7 @@ public class NettyDiscardServer {
     }
 
     public static void main(String[] args) {
-        int port = 8000;
+        int port = 8080;
         new NettyDiscardServer(port).runServer();
     }
 }
